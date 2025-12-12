@@ -1,6 +1,6 @@
 import { eachDayOfInterval } from "date-fns";
 import supabase from "./supabase";
-
+import { notFound } from "next/navigation";
 /////////////
 // GET
 
@@ -15,6 +15,7 @@ export async function getCabin(id) {
   // await new Promise((res) => setTimeout(res, 1000));
 
   if (error) {
+    notFound();
     console.error(error);
   }
 
@@ -31,18 +32,18 @@ export async function getCabinPrice(id) {
   if (error) {
     console.error(error);
   }
-
   return data;
 }
 
 export const getCabins = async function () {
+  console.log("starting..");
   const { data, error } = await supabase
     .from("cabins")
     .select("id, name, maxCapacity, regularPrice, discount, image")
     .order("name");
-
+  console.log(data, "Data");
   if (error) {
-    console.error(error);
+    console.error(error.message);
     throw new Error("Cabins could not be loaded");
   }
 
@@ -185,15 +186,12 @@ export async function updateGuest(id, updatedFields) {
   const { data, error } = await supabase
     .from("guests")
     .update(updatedFields)
-    .eq("id", id)
-    .select()
-    .single();
+    .eq("id", id);
 
   if (error) {
     console.error(error);
     throw new Error("Guest could not be updated");
   }
-  return data;
 }
 
 export async function updateBooking(id, updatedFields) {

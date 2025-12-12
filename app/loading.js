@@ -1,7 +1,9 @@
 "use client";
 
+import Spinner from "./_components/Spinner";
+
 function Loader() {
-  return <div>Loading</div>;
+  return <Spinner />;
 }
 
 export default Loader;
