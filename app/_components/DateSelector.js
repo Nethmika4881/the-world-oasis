@@ -1,5 +1,10 @@
 "use client";
-import { isWithinInterval } from "date-fns";
+import {
+  differenceInDays,
+  isPast,
+  isSameDay,
+  isWithinInterval,
+} from "date-fns";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { useReservation } from "../_context/Reservation";
@@ -16,12 +21,13 @@ function isAlreadyBooked(range, datesArr) {
 
 function DateSelector({ bookedDates, settings, cabin }) {
   const { range, setRange, resetRange } = useReservation();
+  const displayRange = isAlreadyBooked(range, bookedDates) ? {} : range;
 
   // CHANGE
   const regularPrice = cabin.regularPrice;
   const discount = cabin.discount;
-  const numNights = cabin.numOfNights;
-  const cabinPrice = cabin.regularPrice;
+  const numOfNights = differenceInDays(displayRange.to, displayRange.from);
+  const cabinPrice = (regularPrice - discount) * numOfNights;
 
   // SETTINGS
   const { minBookingLength, maxBookingLength } = settings;
@@ -39,17 +45,20 @@ function DateSelector({ bookedDates, settings, cabin }) {
           day: "p-.1",
         }}
         onSelect={(range) => setRange(range)}
-        selected={range}
+        selected={displayRange}
         mode="range"
-        min={minBookingLength}
-        max={maxBookingLength - 1}
+        min={minBookingLength + 1}
+        max={maxBookingLength}
         fromMonth={new Date()}
         fromDate={new Date()}
         toYear={new Date().getFullYear() + 5}
         captionLayout="dropdown"
         numberOfMonths={2}
         hideNavigation
-        disabled={bookedDates}
+        disabled={(currDate) =>
+          isPast(currDate) ||
+          bookedDates.some((date) => isSameDay(date, currDate))
+        }
       />
 
       <div className="flex items-center justify-between px-8 bg-accent-500 text-primary-800 h-[72px]">
@@ -67,10 +76,10 @@ function DateSelector({ bookedDates, settings, cabin }) {
             )}
             <span className="">/night</span>
           </p>
-          {numNights ? (
+          {numOfNights ? (
             <>
               <p className="bg-accent-600 px-3 py-2 text-2xl">
-                <span>&times;</span> <span>{numNights}</span>
+                <span>&times;</span> <span>{numOfNights}</span>
               </p>
               <p>
                 <span className="text-lg font-bold uppercase">Total</span>{" "}
